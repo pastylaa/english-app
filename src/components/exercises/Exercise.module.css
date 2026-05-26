@@ -204,3 +204,341 @@
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+/* ===== WORD ORDER ===== */
+.woDropZone {
+  min-height: 52px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+  background: var(--cream);
+  transition: border-color 0.2s;
+}
+
+.woPlaceholder {
+  font-size: 13px;
+  color: var(--brown);
+  opacity: 0.5;
+}
+
+.woBank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.woWord {
+  padding: 8px 14px;
+  background: var(--warm-white);
+  border: 2px solid var(--border);
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: all 0.15s;
+}
+
+.woWord:hover {
+  border-color: var(--amber);
+  background: var(--amber-light);
+  transform: translateY(-1px);
+}
+
+.woWordChosen {
+  border-color: var(--amber) !important;
+  background: var(--amber-light) !important;
+}
+
+.woWordPlaced {
+  padding: 8px 14px;
+  background: var(--amber-light);
+  border: 2px solid var(--amber);
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown);
+  transition: all 0.15s;
+}
+
+.woWordPlaced:hover {
+  background: #FDE68A;
+}
+
+.woReset {
+  font-size: 12px;
+  color: var(--brown);
+  opacity: 0.6;
+  padding: 4px 10px;
+  border-radius: 99px;
+  transition: opacity 0.2s;
+}
+
+.woReset:hover { opacity: 1; }
+
+/* ===== DRAG FILL ===== */
+.dfSentence {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 2;
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.dfBlank {
+  display: inline-block;
+  min-width: 80px;
+  padding: 4px 14px;
+  border-bottom: 2px solid var(--amber);
+  color: var(--brown);
+  font-weight: 700;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.dfFilled {
+  background: var(--amber-light);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+}
+
+/* ===== FLASHCARDS ===== */
+.fcProgress {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--brown);
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+
+.fcKnown { color: var(--green); font-weight: 600; opacity: 1; }
+
+.fcCard {
+  width: 100%;
+  min-height: 180px;
+  cursor: pointer;
+  position: relative;
+  perspective: 1000px;
+}
+
+.fcFront, .fcBack {
+  padding: 32px 24px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 180px;
+  transition: all 0.2s;
+}
+
+.fcFront { background: var(--cream); }
+.fcBack { background: var(--blue-light); border-color: #93C5FD; display: none; }
+.fcFlipped .fcFront { display: none; }
+.fcFlipped .fcBack { display: flex; }
+
+.fcWord {
+  font-size: 24px;
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fcHint {
+  font-size: 12px;
+  color: var(--brown);
+  opacity: 0.5;
+}
+
+.fcExample {
+  font-size: 14px;
+  color: var(--blue);
+  font-style: italic;
+}
+
+.fcImage {
+  max-height: 100px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.fcActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.fcDontKnow {
+  flex: 1;
+  padding: 12px;
+  background: var(--red-light);
+  color: var(--red);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.fcDontKnow:hover { background: #FCA5A5; }
+
+.fcKnowBtn {
+  flex: 1;
+  padding: 12px;
+  background: var(--green-light);
+  color: var(--green);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.fcKnowBtn:hover { background: #BBF7D0; }
+
+/* ===== ANAGRAM ===== */
+.anagramImage {
+  max-height: 120px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.anagramAnswer {
+  min-height: 56px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 14px;
+  background: var(--cream);
+}
+
+.anagramBank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.anagramLetter {
+  width: 40px;
+  height: 44px;
+  background: var(--warm-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: 'Fraunces', serif;
+  transition: all 0.15s;
+}
+
+.anagramLetter:hover {
+  border-color: var(--amber);
+  background: var(--amber-light);
+  transform: translateY(-2px);
+}
+
+.anagramLetterPlaced {
+  width: 40px;
+  height: 44px;
+  background: var(--amber-light);
+  border: 2px solid var(--amber);
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brown);
+  font-family: 'Fraunces', serif;
+  transition: all 0.15s;
+}
+
+.anagramLetterPlaced:hover { background: #FDE68A; }
+
+/* ===== MEMORY GAME ===== */
+.memoryDone {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--green);
+  padding: 12px;
+  background: var(--green-light);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.memoryGrid {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.memoryCard {
+  aspect-ratio: 3/2;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  overflow: hidden;
+}
+
+.memoryBack {
+  width: 100%;
+  height: 100%;
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memoryFront {
+  width: 100%;
+  height: 100%;
+  background: var(--blue-light);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  text-align: center;
+}
+
+.memoryMatched .memoryFront {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.memoryImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Match words with images */
+.matchItemImg {
+  width: 100%;
+  max-height: 60px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}

@@ -3,35 +3,20 @@ import styles from './Exercise.module.css'
 
 export default function MatchWords({ pairs, answers, onChange }) {
   const [shuffledRight, setShuffledRight] = useState([])
-  const [selected, setSelected] = useState(null) // { side: 'left'|'right', index }
-  const [matches, setMatches] = useState({}) // leftIndex -> rightIndex
+  const [selected, setSelected] = useState(null)
+  const [matches, setMatches] = useState({})
 
   useEffect(() => {
     const indices = pairs.map((_, i) => i)
-    const shuffled = [...indices].sort(() => Math.random() - 0.5)
-    setShuffledRight(shuffled)
+    setShuffledRight([...indices].sort(() => Math.random() - 0.5))
   }, [pairs])
 
   const handleSelect = (side, index) => {
-    if (!selected) {
-      setSelected({ side, index })
-      return
-    }
+    if (!selected) { setSelected({ side, index }); return }
+    if (selected.side === side) { setSelected({ side, index }); return }
 
-    if (selected.side === side) {
-      setSelected({ side, index })
-      return
-    }
-
-    // Match!
-    let leftIdx, rightOriginalIdx
-    if (side === 'right') {
-      leftIdx = selected.index
-      rightOriginalIdx = index
-    } else {
-      leftIdx = index
-      rightOriginalIdx = selected.index
-    }
+    let leftIdx = side === 'right' ? selected.index : index
+    let rightOriginalIdx = side === 'right' ? index : selected.index
 
     const newMatches = { ...matches, [leftIdx]: rightOriginalIdx }
     setMatches(newMatches)
@@ -39,17 +24,17 @@ export default function MatchWords({ pairs, answers, onChange }) {
     setSelected(null)
   }
 
-  const isLeftMatched = (li) => li in matches
-  const isRightMatched = (ri) => Object.values(matches).includes(ri)
-  const isSelectedLeft = (li) => selected?.side === 'left' && selected.index === li
-  const isSelectedRight = (ri) => selected?.side === 'right' && selected.index === ri
-
   const clearMatch = (li) => {
     const newMatches = { ...matches }
     delete newMatches[li]
     setMatches(newMatches)
     onChange(li, undefined)
   }
+
+  const isLeftMatched = (li) => li in matches
+  const isRightMatched = (ri) => Object.values(matches).includes(ri)
+  const isSelectedLeft = (li) => selected?.side === 'left' && selected.index === li
+  const isSelectedRight = (ri) => selected?.side === 'right' && selected.index === ri
 
   return (
     <div className={styles.card}>
@@ -67,6 +52,7 @@ export default function MatchWords({ pairs, answers, onChange }) {
               `}
               onClick={() => isLeftMatched(li) ? clearMatch(li) : handleSelect('left', li)}
             >
+              {p.imageUrl && <img src={p.imageUrl} alt={p.left} className={styles.matchItemImg} />}
               {p.left}
               {isLeftMatched(li) && <span className={styles.matchedWith}> → {pairs[matches[li]]?.right}</span>}
             </button>
@@ -83,7 +69,10 @@ export default function MatchWords({ pairs, answers, onChange }) {
               onClick={() => !isRightMatched(origIdx) && handleSelect('right', origIdx)}
               disabled={isRightMatched(origIdx)}
             >
-              {pairs[origIdx]?.right}
+              {pairs[origIdx]?.imageUrl && !pairs[origIdx]?.right
+                ? <img src={pairs[origIdx].imageUrl} alt="" className={styles.matchItemImg} />
+                : pairs[origIdx]?.right
+              }
             </button>
           ))}
         </div>

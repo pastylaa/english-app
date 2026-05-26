@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { db } from '../firebase.js'
-import { ref, onValue, push, set } from 'firebase/database'
+import { ref, onValue, set } from 'firebase/database'
 import { v4 as uuidv4 } from 'uuid'
 import FillBlank from '../components/exercises/FillBlank.jsx'
 import MultipleChoice from '../components/exercises/MultipleChoice.jsx'
 import MatchWords from '../components/exercises/MatchWords.jsx'
 import WriteSentence from '../components/exercises/WriteSentence.jsx'
+import WordOrder from '../components/exercises/WordOrder.jsx'
+import DragFill from '../components/exercises/DragFill.jsx'
+import Flashcards from '../components/exercises/Flashcards.jsx'
+import Anagram from '../components/exercises/Anagram.jsx'
+import MemoryGame from '../components/exercises/MemoryGame.jsx'
 import styles from './ExercisePage.module.css'
+
+const SELF_GRADED = ['flashcards', 'memory']
 
 export default function ExercisePage() {
   const { exerciseId } = useParams()
@@ -21,18 +28,15 @@ export default function ExercisePage() {
   const [score, setScore] = useState(null)
 
   useEffect(() => {
-    const savedName = sessionStorage.getItem(`name_${exerciseId}`)
-    if (savedName) { setStudentName(savedName); setNameSet(true) }
+    const saved = sessionStorage.getItem(`name_${exerciseId}`)
+    if (saved) { setStudentName(saved); setNameSet(true) }
   }, [exerciseId])
 
   useEffect(() => {
     const exRef = ref(db, `exercises/${exerciseId}`)
-    const unsub = onValue(exRef, (snap) => {
-      if (snap.exists()) {
-        setExercise(snap.val())
-      } else {
-        setNotFound(true)
-      }
+    const unsub = onValue(exRef, snap => {
+      if (snap.exists()) setExercise(snap.val())
+      else setNotFound(true)
       setLoading(false)
     })
     return () => unsub()
@@ -45,12 +49,9 @@ export default function ExercisePage() {
   const handleSubmit = async () => {
     if (!exercise) return
     const sessionId = uuidv4()
-    const timestamp = Date.now()
-
-    // Calculate score for auto-graded types
     let calculatedScore = null
-    let total = 0
     let correct = 0
+    let total = 0
 
     if (exercise.type === 'fill-blank') {
       total = exercise.questions.length
@@ -66,42 +67,51 @@ export default function ExercisePage() {
       calculatedScore = { correct, total }
     } else if (exercise.type === 'match-words') {
       total = exercise.pairs.length
-      exercise.pairs.forEach((p, i) => {
-        if (answers[i] === i) correct++ // answers[i] = index of matched right item
+      exercise.pairs.forEach((_, i) => {
+        if (Number(answers[i]) === i) correct++
+      })
+      calculatedScore = { correct, total }
+    } else if (exercise.type === 'word-order') {
+      total = exercise.questions.length
+      exercise.questions.forEach((q, i) => {
+        if (answers[i]?.trim().toLowerCase() === q.sentence.trim().toLowerCase()) correct++
+      })
+      calculatedScore = { correct, total }
+    } else if (exercise.type === 'drag-fill') {
+      total = exercise.questions.length
+      exercise.questions.forEach((q, i) => {
+        if (answers[i] === q.options[0]) correct++
+      })
+      calculatedScore = { correct, total }
+    } else if (exercise.type === 'anagram') {
+      total = exercise.questions.length
+      exercise.questions.forEach((q, i) => {
+        if (answers[i]?.toUpperCase() === q.word.toUpperCase()) correct++
       })
       calculatedScore = { correct, total }
     }
 
     const result = {
-      sessionId,
-      studentName,
-      answers,
+      sessionId, studentName, answers,
       score: calculatedScore,
-      timestamp,
+      timestamp: Date.now(),
       exerciseId,
       exerciseTitle: exercise.title,
       exerciseType: exercise.type,
     }
 
-    const resultRef = ref(db, `results/${exerciseId}/${sessionId}`)
-    await set(resultRef, result)
-
+    await set(ref(db, `results/${exerciseId}/${sessionId}`), result)
     setScore(calculatedScore)
     setSubmitted(true)
   }
 
-  if (loading) return (
-    <div className={styles.center}>
-      <div className={styles.spinner} />
-    </div>
-  )
-
+  if (loading) return <div className={styles.center}><div className={styles.spinner} /></div>
   if (notFound) return (
     <div className={styles.center}>
       <div className={styles.card}>
         <div className={styles.bigEmoji}>😕</div>
         <h2>Вправу не знайдено</h2>
-        <p>Перевір посилання або попроси вчителя надіслати його знову.</p>
+        <p>Перевір посилання або попроси вчителя надіслати знову.</p>
       </div>
     </div>
   )
@@ -149,10 +159,7 @@ export default function ExercisePage() {
           {score ? (score.correct === score.total ? '🌟' : score.correct >= score.total / 2 ? '🎉' : '💪') : '✅'}
         </div>
         <h2 className={styles.doneTitle}>
-          {score
-            ? score.correct === score.total ? 'Відмінно!' : 'Молодець!'
-            : 'Вправу виконано!'
-          }
+          {score ? (score.correct === score.total ? 'Відмінно!' : 'Молодець!') : 'Вправу виконано!'}
         </h2>
         {score && (
           <div className={styles.scoreBox}>
@@ -179,6 +186,8 @@ export default function ExercisePage() {
     </div>
   )
 
+  const isSelfGraded = SELF_GRADED.includes(exercise.type)
+
   return (
     <div className={styles.page}>
       <header className={styles.exHeader}>
@@ -192,24 +201,30 @@ export default function ExercisePage() {
       </header>
 
       <main className={styles.exMain}>
-        {exercise.type === 'fill-blank' && (
-          <FillBlank questions={exercise.questions} answers={answers} onChange={handleAnswer} />
-        )}
-        {exercise.type === 'multiple-choice' && (
-          <MultipleChoice questions={exercise.questions} answers={answers} onChange={handleAnswer} />
-        )}
-        {exercise.type === 'match-words' && (
-          <MatchWords pairs={exercise.pairs} answers={answers} onChange={handleAnswer} />
-        )}
-        {exercise.type === 'write-sentence' && (
-          <WriteSentence questions={exercise.questions} answers={answers} onChange={handleAnswer} />
-        )}
+        {exercise.type === 'fill-blank' && <FillBlank questions={exercise.questions} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'multiple-choice' && <MultipleChoice questions={exercise.questions} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'match-words' && <MatchWords pairs={exercise.pairs} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'write-sentence' && <WriteSentence questions={exercise.questions} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'word-order' && <WordOrder questions={exercise.questions} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'drag-fill' && <DragFill questions={exercise.questions} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'flashcards' && <Flashcards cards={exercise.cards} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'anagram' && <Anagram questions={exercise.questions} answers={answers} onChange={handleAnswer} />}
+        {exercise.type === 'memory' && <MemoryGame pairs={exercise.pairs} answers={answers} onChange={handleAnswer} />}
 
-        <div className={styles.submitRow}>
-          <button className={styles.submitBtn} onClick={handleSubmit}>
-            Відправити відповіді ✓
-          </button>
-        </div>
+        {!isSelfGraded && (
+          <div className={styles.submitRow}>
+            <button className={styles.submitBtn} onClick={handleSubmit}>
+              Відправити відповіді ✓
+            </button>
+          </div>
+        )}
+        {isSelfGraded && (
+          <div className={styles.submitRow}>
+            <button className={styles.submitBtn} style={{background:'var(--blue)'}} onClick={handleSubmit}>
+              Завершити вправу ✓
+            </button>
+          </div>
+        )}
       </main>
     </div>
   )
